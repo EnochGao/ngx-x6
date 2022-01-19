@@ -1,10 +1,12 @@
 import { AfterViewInit, Component, ElementRef, Injector, TemplateRef, ViewChild } from '@angular/core';
-import { Graph, Shape, Cell, Addon } from '@antv/x6';
+import { Graph, Shape, Cell, Addon, DataUri } from '@antv/x6';
+import { Options } from '@antv/x6/lib/graph/options';
 import { HTML } from '@antv/x6/lib/shape/standard';
 import { Heros, HeroType } from './app.config';
 import { AppService } from './app.service';
 import { NodeComponent } from './node-component/node/node.component';
-
+import { Node1Component } from './node-component/node1/node1.component';
+import { Node2Component } from './node-component/node2/node2.component';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +16,7 @@ import { NodeComponent } from './node-component/node/node.component';
 export class AppComponent implements AfterViewInit {
   Heros = Heros;
 
-  @ViewChild('container') container: ElementRef;
+  @ViewChild('container', { static: true }) container: ElementRef;
   @ViewChild('demoTpl') demoTpl: TemplateRef<{}>;
   @ViewChild('dataTpl') dataTpl: TemplateRef<{}>;
 
@@ -22,12 +24,13 @@ export class AppComponent implements AfterViewInit {
   dnd: Addon.Dnd;
   dndFinishWithJudge: boolean;
   /** x6画布的一些基础属性 */
-  graphBasicConfig = {
+  graphBasicConfig: Partial<Options.Manual> = {
     panning: true, // 画布拖拽
     selecting: true,
-    width: document.body.scrollWidth,
-    height: 400,
-    background: { color: '#f7f8fa' },
+    background: {
+      color: '#fff'
+    },
+    grid: true,
     connecting: {
       snap: true, // 连线的过程中距离节点或者连接桩 50px 时会触发自动吸附
       allowBlank: false, // 是否允许连接到画布空白位置的点
@@ -38,6 +41,33 @@ export class AppComponent implements AfterViewInit {
       connectionPoint: 'boundary'
     }
   };
+
+  constructor(private appService: AppService, private injector: Injector) {
+  }
+
+  // 必须是在这个钩子中初始化
+  ngAfterViewInit(): void {
+    this.initGraph();
+  }
+
+  export(type?: 'png') {
+    if (type) {
+      this.graph.toPNG((dataUri: string) => {
+        DataUri.downloadDataUri(dataUri, 'chart.png');
+      }, {
+        padding: {
+          top: 20,
+          right: 30,
+          bottom: 40,
+          left: 50,
+        },
+      });
+      return;
+    }
+    this.graph.toSVG((dataUri: string) => {
+      DataUri.downloadDataUri(DataUri.svgToDataUrl(dataUri), 'chart.svg');
+    });
+  }
 
   // 添加节点(构造函数)
   addNode1(): void {
@@ -411,18 +441,15 @@ export class AppComponent implements AfterViewInit {
   startDragComponent(e: MouseEvent): void {
     const node = this.graph.createNode({
       data: {
-        ngArguments: {
-          title: "拖拽component"
-        }
+        title: "拖拽component"
       },
       width: 160,
       height: 30,
       shape: "angular-shape",
-      component: 'demo-component',
+      component: 'node1',
     });
-    const tempNode = node.clone();
 
-    this.dnd.start(tempNode, e);
+    this.dnd.start(node, e);
   }
 
   initDndWithJudge(): void {
@@ -572,14 +599,13 @@ export class AppComponent implements AfterViewInit {
   addAngularComponent(): void {
     const node = this.graph.addNode({
       data: {
-        ngArguments: {
-          title: 'Angular Component',
-        }
+        title: 'Angular Component',
+        count: 7
       },
       x: 40,
       y: 40,
-      width: 160,
-      height: 30,
+      width: 250,
+      height: 250,
       shape: 'angular-shape',
       component: 'demo-component',
     });
@@ -587,9 +613,7 @@ export class AppComponent implements AfterViewInit {
     // 使用setData更新Angular Component中的属性
     setTimeout(() => {
       node.setData({
-        ngArguments: {
-          title: 'Update Component'
-        }
+        title: 'Update Component'
       });
     }, 1000);
   }
@@ -598,9 +622,7 @@ export class AppComponent implements AfterViewInit {
 
     this.graph.addNode({
       data: {
-        ngArguments: {
-          title: 'Angular Template'
-        }
+        title: 'Angular Template'
       },
       x: 240,
       y: 40,
@@ -613,11 +635,6 @@ export class AppComponent implements AfterViewInit {
 
   addAngularWithCallback(): void {
     this.graph.addNode({
-      data: {
-        ngArguments: {
-          title: 'Angular Callback'
-        }
-      },
       x: 440,
       y: 40,
       width: 160,
@@ -772,20 +789,11 @@ export class AppComponent implements AfterViewInit {
 
     Graph.registerAngularComponent('demo-template', { injector: this.injector, content: this.demoTpl });
     Graph.registerAngularComponent('demo-component', { injector: this.injector, content: NodeComponent });
+    Graph.registerAngularComponent('node1', { injector: this.injector, content: Node1Component });
     Graph.registerAngularComponent('callback', (node: any) => {
-      console.log('node----->:::', node);
-      return ({ injector: this.injector, content: this.demoTpl });
+      return ({ injector: this.injector, content: Node2Component });
     });
-
-
   }
 
-  constructor(private appService: AppService, private injector: Injector) {
 
-  }
-
-  // 必须是在这个钩子中初始化
-  ngAfterViewInit(): void {
-    this.initGraph();
-  }
 }

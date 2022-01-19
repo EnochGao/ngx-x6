@@ -1,0 +1,22 @@
+.head-example {
+  width: 42px;
+  height: 42px;
+  border-radius: 4px;
+  background: #eee;
+  display: inline-block;
+  vertical-align: middle;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+nz-badge {
+  margin-right: 20px;
+}
+
+nz-badge.ant-badge-rtl {
+  margin-right: 0;
+  margin-left: 20px;
+}

@@ -35,16 +35,20 @@ export class AngularShapeView extends NodeView<AngularShape> {
       const domOutlet = new DomPortalOutlet(root, componentFactoryResolver, applicationRef, injector);
 
       if (content instanceof TemplateRef) {
-        const ngArguments = (node.data?.ngArguments as { [key: string]: any; }) || {};
-        const portal = new TemplatePortal(content, viewContainerRef, { ngArguments });
+        const portal = new TemplatePortal(content, viewContainerRef, {
+          $implicit: node.data,
+          node,
+          graph
+        });
         domOutlet.attachTemplatePortal(portal);
       } else {
         const portal = new ComponentPortal(content, viewContainerRef);
         const componentRef = domOutlet.attachComponentPortal(portal);
         // 将用户传入的ngArguments依次赋值到component的属性当中
         const renderComponentInstance = () => {
-          const ngArguments = (node.data?.ngArguments as { [key: string]: any; }) || {};
-          Object.keys(ngArguments).forEach(v => (componentRef.instance[v] = ngArguments[v]));
+          componentRef.instance.node = node;
+          componentRef.instance.data = node.data;
+          componentRef.instance.graph = graph;
           componentRef.changeDetectorRef.detectChanges();
         };
         renderComponentInstance();
