@@ -1,12 +1,10 @@
 import { AfterViewInit, Component, ElementRef, Injector, TemplateRef, ViewChild } from '@angular/core';
 import { Graph, Shape, Cell, Addon } from '@antv/x6';
 import { HTML } from '@antv/x6/lib/shape/standard';
-import { Subject } from 'rxjs';
 import { Heros, HeroType } from './app.config';
 import { AppService } from './app.service';
-import { NodeComponent } from './node-component/node.component';
-import './x6-angular-shape/index';
-// import '@antv/x6-angular-shape'
+import { NodeComponent } from './node-component/node/node.component';
+
 
 @Component({
   selector: 'app-root',
@@ -112,7 +110,7 @@ export class AppComponent implements AfterViewInit {
   removeNode(): void {
     this.graph.clearCells();
     this.addNode1();
-    this.graph.on('node:mouseenter', (args: { node: HTML }) => {
+    this.graph.on('node:mouseenter', (args: { node: HTML; }) => {
       args.node.addTools({
         name: 'button-remove', // x6 自带的tool类型
         // 覆盖删除按钮自带的配置
@@ -139,7 +137,7 @@ export class AppComponent implements AfterViewInit {
             }
           ],
           x: '100%',
-          onClick(config: { view: any; btn: any }): void {
+          onClick(config: { view: any; btn: any; }): void {
             const { view, btn } = config;
             btn.parent.remove();
             view.cell.remove({ ui: true, toolId: btn.cid });
@@ -147,7 +145,7 @@ export class AppComponent implements AfterViewInit {
         }
       });
     });
-    this.graph.on('node:mouseleave', (args: { node: HTML }) => {
+    this.graph.on('node:mouseleave', (args: { node: HTML; }) => {
       args.node.removeTools();
     });
   }
@@ -410,15 +408,32 @@ export class AppComponent implements AfterViewInit {
     console.log(data, `画布的结果转化为JSON`);
   }
 
+  startDragComponent(e: MouseEvent): void {
+    const node = this.graph.createNode({
+      data: {
+        ngArguments: {
+          title: "拖拽component"
+        }
+      },
+      width: 160,
+      height: 30,
+      shape: "angular-shape",
+      component: 'demo-component',
+    });
+    const tempNode = node.clone();
+
+    this.dnd.start(tempNode, e);
+  }
+
   initDndWithJudge(): void {
     const that = this;
     // #region 重新渲染画布参数
-    const graphConfig: { [key: string]: any } = {
+    const graphConfig: { [key: string]: any; } = {
       ...this.graphBasicConfig,
       container: this.container.nativeElement
     };
     // 是否允许创建连接线(连出的时候)
-    graphConfig.connecting.validateMagnet = (config: { cell: any }) => {
+    graphConfig.connecting.validateMagnet = (config: { cell: any; }) => {
       const label = config.cell.data.label as HeroType;
       if (label === 'Morgana') {
         alert('莫甘娜: 我不会主动攻击人啊, 嘤嘤嘤~');
@@ -473,7 +488,7 @@ export class AppComponent implements AfterViewInit {
 
   /** 使用曼哈顿路由, 也就是让节点的连接线避开节点 */
   manhattan(): void {
-    const graphConfig: { [key: string]: any } = {
+    const graphConfig: { [key: string]: any; } = {
       ...this.graphBasicConfig,
       container: this.container.nativeElement
     };
@@ -553,9 +568,8 @@ export class AppComponent implements AfterViewInit {
     this.appService.subject$.next();
   }
 
-  
+
   addAngularComponent(): void {
-    Graph.registerAngularContent('demo-component', { injector: this.injector, content: NodeComponent });
     const node = this.graph.addNode({
       data: {
         ngArguments: {
@@ -567,7 +581,7 @@ export class AppComponent implements AfterViewInit {
       width: 160,
       height: 30,
       shape: 'angular-shape',
-      componentName: 'demo-component'
+      component: 'demo-component',
     });
 
     // 使用setData更新Angular Component中的属性
@@ -581,7 +595,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   addAngularTemplate(): void {
-    Graph.registerAngularContent('demo-template', { injector: this.injector, content: this.demoTpl });
+
     this.graph.addNode({
       data: {
         ngArguments: {
@@ -593,14 +607,11 @@ export class AppComponent implements AfterViewInit {
       width: 160,
       height: 30,
       shape: 'angular-shape',
-      componentName: 'demo-template'
+      component: 'demo-template'
     });
   }
 
   addAngularWithCallback(): void {
-    Graph.registerAngularContent('demo-template-callback', _node => {
-      return { injector: this.injector, content: this.demoTpl };
-    });
     this.graph.addNode({
       data: {
         ngArguments: {
@@ -612,7 +623,7 @@ export class AppComponent implements AfterViewInit {
       width: 160,
       height: 30,
       shape: 'angular-shape',
-      componentName: 'demo-template-callback'
+      component: 'callback'
     });
   }
 
@@ -721,7 +732,7 @@ export class AppComponent implements AfterViewInit {
     };
     this.graph = new Graph(graphConfig);
 
-    this.graph.on('node:mouseenter', (args: { node: HTML }) => {
+    this.graph.on('node:mouseenter', (args: { node: HTML; }) => {
       args.node.addTools({
         name: 'button-remove', // x6 自带的tool类型
         // 覆盖删除按钮自带的配置
@@ -755,12 +766,23 @@ export class AppComponent implements AfterViewInit {
         }
       });
     });
-    this.graph.on('node:mouseleave', (args: { node: HTML }) => {
+    this.graph.on('node:mouseleave', (args: { node: HTML; }) => {
       args.node.removeTools();
     });
+
+    Graph.registerAngularComponent('demo-template', { injector: this.injector, content: this.demoTpl });
+    Graph.registerAngularComponent('demo-component', { injector: this.injector, content: NodeComponent });
+    Graph.registerAngularComponent('callback', (node: any) => {
+      console.log('node----->:::', node);
+      return ({ injector: this.injector, content: this.demoTpl });
+    });
+
+
   }
 
-  constructor(private appService: AppService, private injector: Injector) {}
+  constructor(private appService: AppService, private injector: Injector) {
+
+  }
 
   // 必须是在这个钩子中初始化
   ngAfterViewInit(): void {
