@@ -15,6 +15,7 @@ import { Node2Component } from './node-component/node2/node2.component';
 })
 export class AppComponent implements AfterViewInit {
   Heros = Heros;
+  jsonData: any;
 
   @ViewChild('container', { static: true }) container: ElementRef;
   @ViewChild('demoTpl') demoTpl: TemplateRef<{}>;
@@ -436,6 +437,7 @@ export class AppComponent implements AfterViewInit {
   print(): void {
     const data = this.graph.toJSON();
     console.log(data, `画布的结果转化为JSON`);
+    this.jsonData = data;
   }
 
   startDragComponent(e: MouseEvent): void {

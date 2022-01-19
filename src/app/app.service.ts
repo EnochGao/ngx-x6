@@ -3,5 +3,5 @@ import { Subject } from 'rxjs';
 
 @Injectable()
 export class AppService {
-  subject$ = new Subject();
+  subject$ = new Subject<void>();
 }

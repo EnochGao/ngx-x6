@@ -2,7 +2,7 @@ import { ApplicationRef, ComponentFactoryResolver, TemplateRef, ViewContainerRef
 import { NodeView, Scheduler } from '@antv/x6';
 import { AngularShape } from './node';
 import { ComponentPortal, DomPortalOutlet, TemplatePortal } from '@angular/cdk/portal';
-import { Content, Definition } from './registry';
+import { Content } from './registry';
 
 
 export class AngularShapeView extends NodeView<AngularShape> {
@@ -44,7 +44,7 @@ export class AngularShapeView extends NodeView<AngularShape> {
       } else {
         const portal = new ComponentPortal(content, viewContainerRef);
         const componentRef = domOutlet.attachComponentPortal(portal);
-        // 将用户传入的ngArguments依次赋值到component的属性当中
+
         const renderComponentInstance = () => {
           componentRef.instance.node = node;
           componentRef.instance.data = node.data;
