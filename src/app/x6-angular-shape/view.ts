@@ -1,5 +1,5 @@
 import { ApplicationRef, ComponentFactoryResolver, TemplateRef, ViewContainerRef } from '@angular/core';
-import { NodeView, Scheduler } from '@antv/x6';
+import { EdgeView, NodeView, Scheduler } from '@antv/x6';
 import { AngularShape } from './node';
 import { ComponentPortal, DomPortalOutlet, TemplatePortal } from '@angular/cdk/portal';
 import { Content } from './registry';
@@ -83,4 +83,5 @@ export namespace AngularShapeView {
   });
 
   NodeView.registry.register('angular-shape-view', AngularShapeView, true);
+
 }
