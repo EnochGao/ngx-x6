@@ -96,10 +96,6 @@
           "options": {
             "browserTarget": "ngx-x6-demo:build"
           }
-        },
-        "deploy": {
-          "builder": "angular-cli-ghpages:deploy",
-          "options": {}
         }
       }
     }
